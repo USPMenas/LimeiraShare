@@ -1,79 +1,60 @@
 import { navigateTo } from "../components/navbar";
+import { getCursos, Curso } from "../services/api";
 
-export function createCursosPage() {
+export async function createCursosPage() {
   const container = document.createElement("div");
-  container.className =
-    "flex flex-col items-center justify-center min-h-screen bg-gray-100 pt-20";
+  container.className = "p-4";
 
   const title = document.createElement("h1");
   title.textContent = "Cursos Disponíveis";
-  title.className = "text-3xl font-bold text-blue-600 mb-6";
-
-  // Criar a tabela
-  const table = document.createElement("table");
-  table.className = "w-3/4 border border-gray-300 bg-white shadow-md";
-
-  // Lista de cursos (exemplo)
-  const cursos = [
-    {
-      faculdade: "Universidade de São Paulo",
-      curso: "Engenharia Ambiental",
-      periodo: "Integral",
-    },
-    {
-      faculdade: "Universidade Estadual de Campinas",
-      curso: "Ciência da Computação",
-      periodo: "Noturno",
-    },
-    {
-      faculdade: "Universidade Federal de Minas Gerais",
-      curso: "Medicina",
-      periodo: "Integral",
-    },
-  ];
-
-  // Criando as linhas da tabela
-  cursos.forEach((curso) => {
-    const row = document.createElement("tr");
-    row.className = "border-b border-gray-200 cursor-pointer hover:bg-gray-200";
-
-    // Ícone universitário
-    const iconTd = document.createElement("td");
-    iconTd.className = "p-4 text-center";
-    iconTd.innerHTML = "🎓"; // Ícone de universidade
-
-    // Nome da faculdade
-    const faculdadeTd = document.createElement("td");
-    faculdadeTd.className = "p-4 font-semibold text-gray-800";
-    faculdadeTd.textContent = curso.faculdade;
-
-    // Nome do curso
-    const cursoTd = document.createElement("td");
-    cursoTd.className = "p-4 text-gray-600";
-    cursoTd.textContent = curso.curso;
-
-    // Período
-    const periodoTd = document.createElement("td");
-    periodoTd.className = "p-4 text-gray-600";
-    periodoTd.textContent = curso.periodo;
-
-    // Evento de clique para redirecionar para os anos do curso
-    row.addEventListener("click", () => {
-      navigateTo(
-        `/cursos/${encodeURIComponent(curso.faculdade)}/${encodeURIComponent(
-          curso.curso
-        )}`
-      );
-    });
-
-    row.appendChild(iconTd);
-    row.appendChild(faculdadeTd);
-    row.appendChild(cursoTd);
-    row.appendChild(periodoTd);
-    table.appendChild(row);
-  });
-
+  title.className = "text-2xl font-bold mb-4";
   container.appendChild(title);
+
+  const table = document.createElement("table");
+  table.className = "w-full border-collapse border border-gray-300";
+
+  const thead = document.createElement("thead");
+  thead.innerHTML = `
+    <tr class="bg-gray-200">
+      <th class="border border-gray-300 p-2">Faculdade</th>
+      <th class="border border-gray-300 p-2">Nome do Curso</th>
+      <th class="border border-gray-300 p-2">Período</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  table.appendChild(tbody);
+
+  try {
+    const cursos: Curso[] = await getCursos();
+    console.log("Cursos recebidos:", cursos); // 🔹 Verifique se os cursos estão vindo corretamente
+
+    cursos.forEach((curso: Curso) => {
+      if (!curso) {
+        console.error("Curso inválido:", curso);
+        return;
+      }
+
+      const row = document.createElement("tr");
+      row.className = "border border-gray-300";
+
+      row.innerHTML = `
+        <td class="border border-gray-300 p-2">${curso.faculdade}</td>
+        <td class="border border-gray-300 p-2 cursor-pointer text-blue-600 underline">${curso.nome}</td>
+        <td class="border border-gray-300 p-2">${curso.periodo}</td>
+      `;
+
+      row.children[1].addEventListener("click", () => {
+        navigateTo(`/cursos/${curso.id}`);
+      });
+
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar cursos:", error);
+  }
+
   container.appendChild(table);
   return container;
 }

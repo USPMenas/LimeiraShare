@@ -11,7 +11,15 @@ import pastaRoutes from "./routes/pastas";
 config(); // Carregar variáveis de ambiente
 
 const app = express();
-app.use(cors());
+// 🔹 Configurar CORS para permitir requisições do frontend (substitua pela URL exata)
+const corsOptions = {
+  origin: "*", // Permite qualquer origem (para testes)
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rotas

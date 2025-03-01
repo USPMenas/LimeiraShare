@@ -31,13 +31,13 @@ export function createNavbar() {
 }
 
 // Função de navegação para atualizar a URL sem recarregar a página
-export function navigateTo(page: string) {
+export async function navigateTo(page: string) {
   window.history.pushState({}, "", page);
-  handleRoute();
+  await handleRoute();
 }
 
 // Função que lida com o carregamento da página conforme a rota
-export function handleRoute() {
+export async function handleRoute() {
   const root = document.getElementById("app");
   if (!root) return;
 
@@ -51,51 +51,43 @@ export function handleRoute() {
       .split("/");
 
     if (pathParts.length === 2) {
-      import("../pages/arquivos").then((module) =>
-        root.appendChild(module.createArquivosPage())
-      );
+      const module = await import("../pages/arquivos");
+      root.appendChild(await module.createArquivosPage());
     } else {
-      import("../pages/disciplinasArquivos").then((module) =>
-        root.appendChild(module.createDisciplinaArquivosPage())
-      );
+      const module = await import("../pages/disciplinasArquivos");
+      root.appendChild(await module.createDisciplinaArquivosPage());
     }
   } else if (window.location.pathname.startsWith("/cursos/")) {
     const pathParts = window.location.pathname.split("/cursos/")[1].split("/");
 
     if (pathParts.length === 3) {
-      import("../pages/cursoDisciplinas").then((module) =>
-        root.appendChild(module.createCursoDisciplinasPage())
-      );
+      const module = await import("../pages/cursoDisciplinas");
+      root.appendChild(await module.createCursoDisciplinasPage());
     } else if (pathParts.length === 2) {
-      import("../pages/cursoAnos").then((module) =>
-        root.appendChild(module.createCursoAnosPage())
-      );
+      const module = await import("../pages/cursoAnos");
+      root.appendChild(await module.createCursoAnosPage());
     } else {
-      import("../pages/cursos").then((module) =>
-        root.appendChild(module.createCursosPage())
-      );
+      const module = await import("../pages/cursos");
+      root.appendChild(await module.createCursosPage());
     }
   } else {
+    let module;
     switch (window.location.pathname) {
       case "/disciplinas":
-        import("../pages/disciplinas").then((module) =>
-          root.appendChild(module.createDisciplinasPage())
-        );
+        module = await import("../pages/disciplinas");
+        root.appendChild(await module.createDisciplinasPage());
         break;
       case "/cursos":
-        import("../pages/cursos").then((module) =>
-          root.appendChild(module.createCursosPage())
-        );
+        module = await import("../pages/cursos");
+        root.appendChild(await module.createCursosPage());
         break;
       case "/sobre":
-        import("../pages/sobre").then((module) =>
-          root.appendChild(module.createSobrePage())
-        );
+        module = await import("../pages/sobre");
+        root.appendChild(await module.createSobrePage());
         break;
       default:
-        import("../pages/home").then((module) =>
-          root.appendChild(module.createHomePage())
-        );
+        module = await import("../pages/home");
+        root.appendChild(await module.createHomePage());
         break;
     }
   }
