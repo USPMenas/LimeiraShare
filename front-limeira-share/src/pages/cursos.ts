@@ -2,6 +2,7 @@ import { navigateTo } from "../components/navbar";
 import { getCursos, Curso } from "../services/api";
 
 export async function createCursosPage() {
+  console.log("estou aqui");
   const container = document.createElement("div");
   container.className = "p-4";
 
@@ -46,7 +47,8 @@ export async function createCursosPage() {
       `;
 
       row.children[1].addEventListener("click", () => {
-        navigateTo(`/cursos/${curso.id}`);
+        const formattedName = curso.nome.replace(/\s+/g, "-").toLowerCase();
+        navigateTo(`/cursos/${formattedName}/${curso.id}`);
       });
 
       tbody.appendChild(row);

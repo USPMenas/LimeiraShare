@@ -41,6 +41,8 @@ export async function handleRoute() {
   const root = document.getElementById("app");
   if (!root) return;
 
+  console.log("🔹 Path atual:", window.location.pathname);
+
   root.innerHTML = ""; // Limpa o conteúdo anterior
 
   createNavbar();
@@ -53,20 +55,31 @@ export async function handleRoute() {
     if (pathParts.length === 2) {
       const module = await import("../pages/arquivos");
       root.appendChild(await module.createArquivosPage());
+    } else if (pathParts.length === 3) {
+      console.log("🔹 Carregando disciplinaPastasPage()");
+      const module = await import("../pages/disciplinasPastas");
+      root.appendChild(await module.createDisciplinaPastasPage());
     } else {
       const module = await import("../pages/disciplinasArquivos");
-      root.appendChild(await module.createDisciplinaArquivosPage());
+      root.appendChild(await module.createPastaArquivosPage());
     }
   } else if (window.location.pathname.startsWith("/cursos/")) {
-    const pathParts = window.location.pathname.split("/cursos/")[1].split("/");
+    const decodedPath = decodeURIComponent(window.location.pathname);
+    const pathParts = decodedPath.split("/cursos/")[1].split("/");
 
-    if (pathParts.length === 3) {
+    console.log("🔹 Path Decodificado:", decodedPath);
+    console.log("🔹 PathParts:", pathParts);
+
+    if (pathParts.length === 4) {
+      console.log("🔹 Carregando cursoDisciplinasPage()");
       const module = await import("../pages/cursoDisciplinas");
       root.appendChild(await module.createCursoDisciplinasPage());
     } else if (pathParts.length === 2) {
+      console.log("🔹 Carregando cursoAnosPage()");
       const module = await import("../pages/cursoAnos");
       root.appendChild(await module.createCursoAnosPage());
     } else {
+      console.log("🔹 Carregando cursosPage()");
       const module = await import("../pages/cursos");
       root.appendChild(await module.createCursosPage());
     }

@@ -1,99 +1,70 @@
+import { getDisciplinasPorAno } from "../services/api";
 import { navigateTo } from "../components/navbar";
 
-export function createCursoDisciplinasPage() {
+export async function createCursoDisciplinasPage() {
+  console.log("🔹 Executando createCursoDisciplinasPage()");
+
   const container = document.createElement("div");
-  container.className =
-    "flex flex-col items-center justify-center min-h-screen bg-gray-100 pt-20";
+  container.className = "p-4";
 
-  // Obtendo a faculdade, nome do curso e ano da URL
-  const path = window.location.pathname;
-  const parts = path.split("/cursos/")[1].split("/");
-  const faculdade = decodeURIComponent(parts[0]);
-  const curso = decodeURIComponent(parts[1]);
-  const ano = decodeURIComponent(parts[2]);
+  const pathParts = decodeURIComponent(window.location.pathname).split("/");
+  console.log("🔹 PathParts:", pathParts);
 
-  // Criar título da página
+  const cursoId = Number(pathParts[pathParts.length - 3]); // Pega o ID do curso
+  const ano_id = Number(pathParts[pathParts.length - 1][0]); // Pega o ano
+  const ano = pathParts[pathParts.length - 2][0]; // Pega o ano
+  const cursoNome = pathParts[2].replace(/-/g, " ");
+
+  console.log("🔹 Curso ID:", cursoId, "Ano:", ano);
+
   const title = document.createElement("h1");
-  title.textContent = `${faculdade} - ${curso} - ${ano}`;
-  title.className = "text-3xl font-bold text-blue-600 mb-6";
-
-  // Criar a tabela
-  const table = document.createElement("table");
-  table.className = "w-3/4 border border-gray-300 bg-white shadow-md";
-
-  // Simulação de disciplinas para cada ano (pode ser substituído por um backend futuramente)
-  const disciplinasPorAno: Record<string, { codigo: string; nome: string }[]> =
-    {
-      "1º Ano": [
-        { codigo: "MC102", nome: "Algoritmos e Programação" },
-        { codigo: "MA141", nome: "Cálculo I" },
-        { codigo: "FIS101", nome: "Física I" },
-      ],
-      "2º Ano": [
-        { codigo: "MC202", nome: "Estruturas de Dados" },
-        { codigo: "MA211", nome: "Cálculo II" },
-        { codigo: "FIS201", nome: "Física II" },
-      ],
-      "3º Ano": [
-        { codigo: "MC302", nome: "Banco de Dados" },
-        { codigo: "MA311", nome: "Cálculo III" },
-        { codigo: "FIS301", nome: "Eletromagnetismo" },
-      ],
-      "4º Ano": [
-        { codigo: "MC402", nome: "Inteligência Artificial" },
-        { codigo: "MA411", nome: "Análise Numérica" },
-        { codigo: "FIS401", nome: "Física Moderna" },
-      ],
-      "5º Ano": [
-        { codigo: "MC502", nome: "Sistemas Distribuídos" },
-        { codigo: "MA511", nome: "Otimização" },
-        { codigo: "FIS501", nome: "Mecânica Quântica" },
-      ],
-      Optativas: [
-        { codigo: "MC600", nome: "Computação Gráfica" },
-        { codigo: "MC601", nome: "Processamento de Imagens" },
-        { codigo: "MC602", nome: "Bioinformática" },
-      ],
-    };
-
-  const disciplinas = disciplinasPorAno[ano] || [];
-
-  // Criando as linhas da tabela
-  disciplinas.forEach((disciplina) => {
-    const row = document.createElement("tr");
-    row.className = "border-b border-gray-200 cursor-pointer hover:bg-gray-200";
-
-    // Ícone de pasta
-    const iconTd = document.createElement("td");
-    iconTd.className = "p-4 text-center";
-    iconTd.innerHTML = "📁"; // Ícone de pasta
-
-    // Código da disciplina
-    const codigoTd = document.createElement("td");
-    codigoTd.className = "p-4 font-semibold text-gray-800";
-    codigoTd.textContent = disciplina.codigo;
-
-    // Nome da disciplina
-    const nomeTd = document.createElement("td");
-    nomeTd.className = "p-4 text-gray-600";
-    nomeTd.textContent = disciplina.nome;
-
-    // Redirecionamento ao clicar na disciplina
-    row.addEventListener("click", () => {
-      navigateTo(
-        `/disciplinas/${disciplina.codigo}-${encodeURIComponent(
-          disciplina.nome
-        )}`
-      );
-    });
-
-    row.appendChild(iconTd);
-    row.appendChild(codigoTd);
-    row.appendChild(nomeTd);
-    table.appendChild(row);
-  });
-
+  title.textContent = `Disciplinas do ${ano}º ano - ${cursoNome}`;
+  title.className = "text-2xl font-bold mb-4";
   container.appendChild(title);
+
+  const table = document.createElement("table");
+  table.className = "w-full border-collapse border border-gray-300";
+
+  const thead = document.createElement("thead");
+  thead.innerHTML = `
+    <tr class="bg-gray-200">
+      <th class="border border-gray-300 p-2">Código</th>
+      <th class="border border-gray-300 p-2">Nome da Disciplina</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  table.appendChild(tbody);
+
+  try {
+    const disciplinas = await getDisciplinasPorAno(cursoId, ano_id);
+
+    disciplinas.forEach((disciplina: any) => {
+      const row = document.createElement("tr");
+      row.className = "border border-gray-300 cursor-pointer hover:bg-gray-100";
+
+      row.innerHTML = `
+        <td class="border border-gray-300 p-2">${disciplina.codigo}</td>
+        <td class="border border-gray-300 p-2 text-blue-600 underline">${disciplina.nome}</td>
+      `;
+
+      // 🔹 Adicionamos o evento para redirecionar para a página de pastas da disciplina
+      row.addEventListener("click", () => {
+        const formattedName = disciplina.nome
+          .replace(/\s+/g, "-")
+          .toLowerCase();
+        navigateTo(
+          `/disciplinas/${cursoNome}/${formattedName}/${disciplina.id}`
+        );
+      });
+
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar disciplinas:", error);
+  }
+
   container.appendChild(table);
   return container;
 }
