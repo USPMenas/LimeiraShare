@@ -6,6 +6,7 @@ import {
   updateCurso,
   deleteCurso,
   getDisciplinasPorAno,
+  handleDeleteCursoByAll,
 } from "../controllers/cursoController";
 
 const router = Router(); // Certifique-se de que o Router está sendo criado corretamente
@@ -17,5 +18,6 @@ router.post("/", createCurso);
 router.put("/:id", updateCurso);
 router.delete("/:id", deleteCurso);
 router.get("/:curso_id/:ano", getDisciplinasPorAno); // 🔹 Nova rota para buscar disciplinas por curso e ano
+router.delete("/deleteCursoByAll", handleDeleteCursoByAll);
 
 export default router;

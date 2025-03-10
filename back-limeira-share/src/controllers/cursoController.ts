@@ -5,6 +5,7 @@ import {
   buscarCursoPorId,
   atualizarCurso,
   deletarCurso,
+  deleteCursoByAll,
 } from "../models/cursoModel";
 
 import { pool } from "../config/db";
@@ -43,21 +44,29 @@ export async function getCursoById(req: Request, res: Response): Promise<any> {
 }
 
 export async function createCurso(req: Request, res: Response): Promise<any> {
-  const { faculdade, nome, periodo } = req.body;
+  const { universidade, campus, faculdade, nome, periodo } = req.body;
 
-  if (!faculdade || !nome || !periodo) {
+  if (!universidade || !campus || !faculdade || !nome || !periodo) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios" });
   }
 
-  const novoCurso = await criarCurso({ faculdade, nome, periodo });
+  const novoCurso = await criarCurso({
+    universidade,
+    campus,
+    faculdade,
+    nome,
+    periodo,
+  });
   res.status(201).json(novoCurso);
 }
 
 export async function updateCurso(req: Request, res: Response): Promise<any> {
   const { id } = req.params;
-  const { faculdade, nome, periodo } = req.body;
+  const { universidade, campus, faculdade, nome, periodo } = req.body;
 
   const cursoAtualizado = await atualizarCurso(Number(id), {
+    universidade,
+    campus,
     faculdade,
     nome,
     periodo,
@@ -105,5 +114,42 @@ export async function getDisciplinasPorAno(
   } catch (error) {
     console.error("Erro ao buscar disciplinas:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
+  }
+}
+
+export async function handleDeleteCursoByAll(
+  req: Request,
+  res: Response
+): Promise<any> {
+  try {
+    console.log("antes de processar o request body");
+    const { universidade, campus, faculdade, nome, periodo } = req.body;
+
+    if (!universidade || !campus || !faculdade || !nome || !periodo) {
+      return res.status(400).json({
+        error: "Todos os campos são obrigatórios para deletar um curso.",
+      });
+    }
+    console.log("após verificar se todos os campos existem;");
+
+    const sucesso = await deleteCursoByAll(
+      universidade,
+      campus,
+      faculdade,
+      nome,
+      periodo
+    );
+
+    if (sucesso) {
+      res.json({ message: "Curso deletado com sucesso." });
+    } else {
+      res.status(404).json({
+        error:
+          "Curso não encontrado. Verifique as informações e tente novamente.",
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao deletar curso:", error);
+    res.status(500).json({ error: "Erro interno do servidor." });
   }
 }
